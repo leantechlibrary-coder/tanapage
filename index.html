@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>棚ページ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============ パレット（色味の軸） ============ */
+body[data-palette="sukkiri"]{
+  --paper:#F6F5F0; --ink:#26241F; --ink-soft:#6E6A60;
+  --accent:#1F4E79; --accent-pale:#E8EDF3;
+  --hairline:#DCD9D0; --card:#FFFFFF; --btn-text:#FFFFFF;
+}
+body[data-palette="pastel"]{
+  --paper:#FBF6F1; --ink:#544E48; --ink-soft:#9C938B;
+  --accent:#8FAE9C; --accent-pale:#EDF2EA;
+  --hairline:#EAE0D8; --card:#FFFFFF; --btn-text:#FFFFFF;
+}
+body[data-palette="vivid"]{
+  --paper:#FFFDF6; --ink:#191817; --ink-soft:#6B6862;
+  --accent:#E8442E; --accent-pale:#FDEAE6;
+  --hairline:#E3DFD4; --card:#FFFFFF; --btn-text:#FFFFFF;
+}
+
+/* ============ ベース ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:15px;
+  line-height:1.9; letter-spacing:.02em;
+  transition:background .3s;
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 22px 170px}
+header{padding:52px 0 18px}
+.shelf-no{font-size:11px;letter-spacing:.28em;color:var(--accent);margin-bottom:12px}
+h1{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.45;letter-spacing:.06em}
+.owner-intro{margin-top:12px;color:var(--ink-soft);font-size:13.5px}
+
+.notice{margin:28px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--hairline);position:relative;border-radius:var(--r)}
+.notice-label{font-size:11px;letter-spacing:.24em;color:var(--accent);margin-bottom:6px}
+.notice p{font-size:13.5px}
+
+.list-head{display:flex;justify-content:space-between;align-items:baseline;margin:44px 0 4px;padding-bottom:10px;border-bottom:var(--rule)}
+.list-head h2{font-family:var(--display);font-weight:500;font-size:15px;letter-spacing:.18em}
+.list-head span{font-size:12px;color:var(--ink-soft)}
+
+.book{border-bottom:1px solid var(--hairline)}
+.book-row{width:100%;display:block;text-align:left;background:none;border:none;font-family:inherit;color:inherit;padding:18px 2px 18px var(--row-pad);cursor:pointer;position:relative}
+.book-row:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.book-title{font-family:var(--display);font-weight:500;font-size:17px;line-height:1.6;letter-spacing:.03em}
+.book-meta{margin-top:3px;font-size:12px;color:var(--ink-soft);letter-spacing:.05em}
+.book-meta .price{color:var(--ink)}
+.book-detail{display:none;padding:0 2px 24px var(--row-pad)}
+.book.open .book-detail{display:block}
+.owner-note{font-size:13.5px;color:var(--ink-soft);padding:14px 16px;background:var(--accent-pale);margin-bottom:16px;border-radius:var(--r)}
+.owner-note b{display:block;font-size:10.5px;letter-spacing:.22em;color:var(--accent);font-weight:700;margin-bottom:4px}
+.buy-btn{font-family:var(--body);font-size:13.5px;letter-spacing:.14em;color:var(--accent);background:none;border:1.5px solid var(--accent);padding:10px 26px;cursor:pointer;border-radius:var(--r-btn);transition:background .2s,color .2s}
+.buy-btn:hover{background:var(--accent);color:var(--btn-text)}
+.buy-btn:focus-visible,.send-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.report-form{display:none;margin-top:16px}
+.book.reporting .report-form{display:block}
+.book.reporting .buy-btn{display:none}
+.report-form label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+.report-form textarea{width:100%;min-height:76px;font-family:var(--body);font-size:14px;line-height:1.8;padding:12px;border:1px solid var(--hairline);background:var(--card);resize:vertical;border-radius:var(--r)}
+.report-form textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.form-actions{display:flex;gap:12px;margin-top:12px;align-items:center}
+.send-btn{font-family:var(--body);font-size:13.5px;letter-spacing:.14em;color:var(--btn-text);background:var(--accent);border:1.5px solid var(--accent);padding:10px 30px;cursor:pointer;border-radius:var(--r-btn)}
+.cancel-btn{font-size:12.5px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.sold-note{font-size:12px;color:var(--ink-soft);padding:14px 2px 18px var(--row-pad)}
+footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-soft)}
+footer a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent)}
+
+/* ============ 返礼オーバーレイ（共通枠） ============ */
+.veil{position:fixed;inset:0;background:rgba(25,23,20,.55);display:none;align-items:flex-start;justify-content:center;z-index:10;padding:0 24px}
+.veil.show{display:flex}
+.reward{background:var(--shiori,#F3EFE4);position:relative;display:flex;flex-direction:column;align-items:center;box-shadow:0 18px 50px rgba(20,18,12,.4)}
+.reward-label{font-size:10px;letter-spacing:.3em;color:var(--accent)}
+.reward-msg{font-family:var(--display)}
+.reward-close{font-family:var(--body);font-size:12px;letter-spacing:.2em;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:4px;margin-top:22px}
+.reward-close:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ============ テーマ1: 文庫 ============ */
+body[data-theme="bunko"]{
+  --display:'Shippori Mincho',serif; --body:'Zen Kaku Gothic New',sans-serif;
+  --r:0; --r-btn:0; --row-pad:16px; --rule:1px solid var(--ink);
+  --shiori:#F3EFE4;
+}
+body[data-theme="bunko"] .notice::before{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(-1.5deg);width:64px;height:18px;background:var(--accent-pale);opacity:.9}
+body[data-theme="bunko"] .book-row::before{content:"";position:absolute;left:0;top:20px;bottom:20px;width:3px;background:var(--hairline);transition:background .25s}
+body[data-theme="bunko"] .book.open .book-row::before,
+body[data-theme="bunko"] .book-row:hover::before{background:var(--accent)}
+body[data-theme="bunko"] .reward{margin-top:-4px;width:min(240px,72vw);min-height:min(430px,74vh);padding:58px 26px 30px;transform:translateY(-110%)}
+body[data-theme="bunko"] .veil.show .reward{animation:drop .8s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes drop{0%{transform:translateY(-110%)}78%{transform:translateY(4vh) rotate(1.6deg)}100%{transform:translateY(3vh) rotate(1.2deg)}}
+body[data-theme="bunko"] .reward::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1.5px var(--hairline)}
+body[data-theme="bunko"] .reward::after{content:"";position:absolute;top:-46px;left:50%;width:1.5px;height:64px;background:var(--accent);transform:translateX(-50%) rotate(3deg);transform-origin:bottom}
+body[data-theme="bunko"] .reward-label{margin:0 0 22px}
+body[data-theme="bunko"] .reward-msg{writing-mode:vertical-rl;font-size:16.5px;line-height:2.3;letter-spacing:.1em;max-height:290px;flex:1}
+
+/* ============ テーマ2: ポップ ============ */
+body[data-theme="pop"]{
+  --display:'Zen Maru Gothic',sans-serif; --body:'Zen Maru Gothic',sans-serif;
+  --r:14px; --r-btn:999px; --row-pad:2px; --rule:2.5px solid var(--accent);
+  --shiori:var(--card);
+}
+body[data-theme="pop"] h1{font-weight:700}
+body[data-theme="pop"] .notice{border:2px solid var(--accent);border-radius:18px}
+body[data-theme="pop"] .notice::after{content:"";position:absolute;bottom:-11px;left:34px;width:18px;height:18px;background:var(--card);border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(45deg)}
+body[data-theme="pop"] .book{border-bottom:none;margin-bottom:10px;background:var(--card);border:1.5px solid var(--hairline);border-radius:16px;padding:2px 16px;transition:border-color .2s}
+body[data-theme="pop"] .book.open{border-color:var(--accent)}
+body[data-theme="pop"] .buy-btn,body[data-theme="pop"] .send-btn{font-weight:700}
+body[data-theme="pop"] .reward{align-self:center;width:min(280px,80vw);aspect-ratio:1;border-radius:50%;padding:36px;justify-content:center;border:3px solid var(--accent);transform:scale(.2);opacity:0;margin-top:22vh}
+body[data-theme="pop"] .veil.show .reward{animation:pon .55s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes pon{0%{transform:scale(.2) rotate(-14deg);opacity:0}100%{transform:scale(1) rotate(-3deg);opacity:1}}
+body[data-theme="pop"] .reward-label{margin-bottom:12px;font-weight:700}
+body[data-theme="pop"] .reward-msg{font-size:15px;line-height:1.9;text-align:center;font-weight:500}
+
+/* ============ テーマ3: 目録（無機質） ============ */
+body[data-theme="index"]{
+  --display:'IBM Plex Sans JP',sans-serif; --body:'IBM Plex Sans JP',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:0; --r-btn:0; --row-pad:2px; --rule:2px solid var(--ink);
+  --shiori:var(--card);
+}
+body[data-theme="index"] h1{font-weight:700;letter-spacing:.02em}
+body[data-theme="index"] .shelf-no,body[data-theme="index"] .notice-label,
+body[data-theme="index"] .book-meta,body[data-theme="index"] .list-head span,
+body[data-theme="index"] .owner-note b{font-family:var(--mono)}
+body[data-theme="index"] .book-row{display:grid;grid-template-columns:44px 1fr;gap:0 12px;align-items:baseline}
+body[data-theme="index"] .book-no{font-family:var(--mono);font-size:11px;color:var(--ink-soft);grid-row:1/3;padding-top:5px}
+body[data-theme="index"] .book-title{font-size:15.5px;font-weight:500}
+body[data-theme="index"] .book-detail{padding-left:58px}
+body[data-theme="index"] .owner-note{background:none;border-left:2px solid var(--accent);border-radius:0}
+body[data-theme="index"] .reward{width:min(320px,84vw);padding:26px 24px 20px;margin-top:0;border-top:6px solid var(--accent);transform:translateY(-105%)}
+body[data-theme="index"] .veil.show .reward{animation:print 1s steps(14) forwards}
+@keyframes print{to{transform:translateY(6vh)}}
+body[data-theme="index"] .reward::after{content:"";position:absolute;bottom:-9px;left:0;right:0;height:9px;background:linear-gradient(-45deg,transparent 6px,var(--card) 0) 0 0/12px 12px repeat-x}
+body[data-theme="index"] .reward-label{font-family:var(--mono);align-self:flex-start;margin-bottom:14px}
+body[data-theme="index"] .reward-msg{font-family:var(--mono);font-size:13.5px;line-height:2;align-self:flex-start}
+
+/* ============ テーマ4: 余白（ミニマル） ============ */
+body[data-theme="yohaku"]{
+  --display:'Zen Kaku Gothic New',sans-serif; --body:'Zen Kaku Gothic New',sans-serif;
+  --r:0; --r-btn:0; --row-pad:2px; --rule:none;
+  --shiori:var(--card);
+}
+body[data-theme="yohaku"] h1{font-weight:300;font-size:34px;letter-spacing:.14em}
+body[data-theme="yohaku"] .notice{border:none;background:none;padding:26px 0 0}
+body[data-theme="yohaku"] .list-head{border-bottom:none;margin-top:56px}
+body[data-theme="yohaku"] .book{border-bottom:none}
+body[data-theme="yohaku"] .book-row{padding-top:22px;padding-bottom:22px}
+body[data-theme="yohaku"] .book-title{font-weight:400;letter-spacing:.08em}
+body[data-theme="yohaku"] .owner-note{background:none;padding-left:0;padding-right:0}
+body[data-theme="yohaku"] .buy-btn{border-width:1px;letter-spacing:.24em}
+body[data-theme="yohaku"] .send-btn{border-width:1px;letter-spacing:.24em}
+body[data-theme="yohaku"] .reward{align-self:center;width:min(300px,82vw);padding:44px 34px;margin-top:26vh;opacity:0;box-shadow:0 8px 40px rgba(20,18,12,.18)}
+body[data-theme="yohaku"] .veil.show .reward{animation:appear 1.1s ease forwards}
+@keyframes appear{to{opacity:1}}
+body[data-theme="yohaku"] .reward-label{margin-bottom:18px}
+body[data-theme="yohaku"] .reward-msg{font-size:14.5px;line-height:2.2;font-weight:300;letter-spacing:.08em;text-align:center}
+
+/* ============ 自作背景画像（棚主アートワーク） ============ */
+body[data-bg="on"]::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 8%, #F2D9C4 0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 85% 25%, #C9D8E8 0%, transparent 65%),
+    radial-gradient(ellipse 100% 50% at 50% 95%, #B8CCB4 0%, transparent 70%),
+    linear-gradient(175deg, #EFE4D4 0%, #DCE4E6 55%, #CFDCCB 100%);
+}
+body[data-bg="on"] .wrap{
+  background:color-mix(in srgb, var(--paper) 84%, transparent);
+  -webkit-backdrop-filter:blur(7px);
+  backdrop-filter:blur(7px);
+  padding-left:26px;padding-right:26px;
+}
+@supports not (background: color-mix(in srgb, red 50%, blue)){
+  body[data-bg="on"] .wrap{background:var(--paper)}
+}
+
+
+@media (prefers-reduced-motion: reduce){
+  .veil.show .reward{animation:none !important;transform:none !important;opacity:1 !important;margin-top:12vh}
+  *{transition:none !important}
+}
+
+.state{padding:64px 0;text-align:center;color:var(--ink-soft);font-size:13px;letter-spacing:.1em}
+</style>
+</head>
+<body data-theme="bunko" data-palette="sukkiri" data-bg="off">
+<div class="wrap">
+  <div class="state" id="state">ひらいています…</div>
+  <div id="page" hidden>
+    <header>
+      <div class="shelf-no" id="shelfNo"></div>
+      <h1 id="shelfName"></h1>
+      <p class="owner-intro" id="ownerIntro"></p>
+    </header>
+    <section class="notice" id="noticeBox" hidden>
+      <div class="notice-label">棚主より</div>
+      <p id="ownerMessage"></p>
+    </section>
+    <div class="list-head">
+      <h2>いまの棚</h2>
+      <span id="count"></span>
+    </div>
+    <div id="books"></div>
+    <footer>
+      <p id="snsLine" hidden>棚主の近況 → <span id="snsLinks"></span></p>
+      <p style="margin-top:8px">このページはお名前・連絡先を一切おうかがいしません。</p>
+    </footer>
+  </div>
+</div>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="棚主からのことづて">
+  <div class="reward">
+    <div class="reward-label">ことづて</div>
+    <div class="reward-msg" id="rewardMsg"></div>
+    <button class="reward-close" id="closeVeil">とじる</button>
+  </div>
+</div>
+
+<script>
+/* ================= 設定 =================
+ * GAS_URL: GASをWebアプリとしてデプロイしたURLを貼る。
+ * 空のままなら見本データで動く（開発用）。
+ * 棚IDはURLの ?s= で指定する（QRに埋め込む）。例: index.html?s=shelf-2f
+ */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwNscZF8AA7jdXtEJEVetS06oxWxCxKU_9ju36oH62_0VHDDPq4RyUXUhKSNZGkbiTUhg/exec';
+const DEFAULT_SHELF = 'shelf-2f';
+
+/* ============ 見本データ（GAS_URL未設定時のフォールバック） ============ */
+const MOCK = {
+  shelf: {
+    name: 'ことづて棚（見本）',
+    intro: 'GAS_URL 未設定のため見本データを表示しています。',
+    message: 'Code.gs をデプロイして GAS_URL を設定すると、シートの内容がここに出ます。',
+    theme: 'bunko', palette: 'sukkiri', bg: '',
+    sns: [{ label: 'note', url: 'https://note.com/' }],
+  },
+  books: [
+    { id:'b001', title:'銀河鉄道の夜', author:'宮沢賢治', price:600,
+      note:'何度目かの読み返しで、カムパネルラの気持ちがやっとわかった気がしました。' },
+    { id:'b002', title:'檸檬', author:'梶井基次郎', price:550,
+      note:'丸善に檸檬を置いて帰る勇気を、私はまだ持っていません。' },
+    { id:'b003', title:'方丈記', author:'鴨長明', price:600,
+      note:'ゆく河の流れは絶えずして。ミニマリストの元祖。' },
+  ],
+};
+const MOCK_REWARD = 'この本を選んでくださって、ありがとう。（見本の返礼です）';
+
+/* ============ ユーティリティ ============ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const shelfId = new URLSearchParams(location.search).get('s') || DEFAULT_SHELF;
+
+/* ============ API ============ */
+async function apiGetShelf() {
+  if (!GAS_URL) return { ok:true, data: MOCK };
+  const res = await fetch(`${GAS_URL}?action=getShelf&shelf=${encodeURIComponent(shelfId)}`);
+  return res.json();
+}
+async function apiReport(bookId, comment) {
+  if (!GAS_URL) return { ok:true, data:{ reward: MOCK_REWARD } };
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },   // CORSプリフライト回避
+    body: JSON.stringify({ action:'report', shelfId, bookId, comment }),
+  });
+  return res.json();
+}
+
+/* ============ 描画 ============ */
+async function load() {
+  let r;
+  try { r = await apiGetShelf(); }
+  catch (e) { r = { ok:false, error:'network' }; }
+  if (!r.ok) {
+    $('state').textContent = 'この棚は見つかりませんでした。';
+    return;
+  }
+  const { shelf, books } = r.data;
+
+  document.body.dataset.theme = shelf.theme || 'bunko';
+  document.body.dataset.palette = shelf.palette || 'sukkiri';
+  if (shelf.bg) {
+    document.body.dataset.bg = 'on';
+    const st = document.createElement('style');
+    st.textContent = `body[data-bg="on"]::before{background:url("${esc(shelf.bg)}") center/cover no-repeat fixed !important}`;
+    document.head.appendChild(st);
+  }
+
+  document.title = shelf.name;
+  $('shelfNo').textContent = shelfId.toUpperCase();
+  $('shelfName').textContent = shelf.name;
+  $('ownerIntro').textContent = shelf.intro || '';
+  if (shelf.message) {
+    $('ownerMessage').textContent = shelf.message;
+    $('noticeBox').hidden = false;
+  }
+  if (shelf.sns && shelf.sns.length) {
+    $('snsLinks').innerHTML = shelf.sns
+      .map(s => `<a href="${esc(s.url)}" rel="noopener">${esc(s.label)}</a>`)
+      .join(' ／ ');
+    $('snsLine').hidden = false;
+  }
+
+  renderBooks(books);
+  $('state').hidden = true;
+  $('page').hidden = false;
+}
+
+let count = 0;
+function updateCount(delta) {
+  count += delta;
+  $('count').textContent = `${count} 冊`;
+}
+
+function renderBooks(books) {
+  const list = $('books');
+  list.innerHTML = '';
+  count = 0;
+  books.forEach((b, i) => {
+    const d = document.createElement('div');
+    d.className = 'book';
+    d.innerHTML = `
+      <button class="book-row" aria-expanded="false">
+        <span class="book-no">${String(i + 1).padStart(3, '0')}</span>
+        <div class="book-title">${esc(b.title)}</div>
+        <div class="book-meta">${esc(b.author)}　·　<span class="price">¥${Number(b.price).toLocaleString()}</span></div>
+      </button>
+      <div class="book-detail">
+        ${b.note ? `<div class="owner-note"><b>棚主の一言</b>${esc(b.note)}</div>` : ''}
+        <button class="buy-btn">この本を買いました</button>
+        <div class="report-form">
+          <label for="c${i}">ひとこと（任意・お名前は不要です）</label>
+          <textarea id="c${i}" maxlength="200" placeholder="感想や、棚主へのことばがあれば"></textarea>
+          <div class="form-actions">
+            <button class="send-btn">送る</button>
+            <button class="cancel-btn">やめる</button>
+          </div>
+        </div>
+      </div>`;
+    const row = d.querySelector('.book-row');
+    row.addEventListener('click', () => {
+      const open = d.classList.toggle('open');
+      row.setAttribute('aria-expanded', open);
+      d.classList.remove('reporting');
+    });
+    d.querySelector('.buy-btn').addEventListener('click', () => d.classList.add('reporting'));
+    d.querySelector('.cancel-btn').addEventListener('click', () => d.classList.remove('reporting'));
+    d.querySelector('.send-btn').addEventListener('click', async ev => {
+      const btn = ev.currentTarget;
+      btn.disabled = true;
+      btn.textContent = '送っています…';
+      const comment = d.querySelector('textarea').value;
+      let res;
+      try { res = await apiReport(b.id, comment); }
+      catch (e) { res = { ok:false }; }
+      if (res.ok) {
+        showReward(res.data.reward);
+        d.innerHTML = `<div class="sold-note">「${esc(b.title)}」— ご報告ありがとうございました。棚主に伝わります。</div>`;
+        updateCount(-1);
+      } else {
+        btn.disabled = false;
+        btn.textContent = '送る';
+        alert('送信できませんでした。電波のよいところでもう一度お試しください。');
+      }
+    });
+    list.appendChild(d);
+    count++;
+  });
+  updateCount(0);
+}
+
+/* ============ 返礼 ============ */
+const veil = $('veil');
+function showReward(msg) {
+  $('rewardMsg').textContent = msg;
+  veil.classList.remove('show');
+  void veil.offsetWidth;
+  veil.classList.add('show');
+  $('closeVeil').focus();
+}
+$('closeVeil').addEventListener('click', () => veil.classList.remove('show'));
+veil.addEventListener('click', e => { if (e.target === veil) veil.classList.remove('show'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') veil.classList.remove('show'); });
+
+load();
+</script>
+</body>
+</html>
