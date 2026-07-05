@@ -80,7 +80,7 @@ footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--hairline);fon
   </header>
 
   <!-- ============ ログイン ============ -->
-  <section id="loginView">
+  <section id="loginView" hidden>
     <div class="panel">
       <h2>棚キーでひらく</h2>
       <form id="loginForm">
@@ -339,11 +339,37 @@ async function refresh() {
 $('reloadBtn').addEventListener('click', refresh);
 $('logoutBtn').addEventListener('click', () => location.reload());
 
-if (!GAS_URL) {
-  $('loginView').hidden = true;
+/* ============ 起動時: 棚キーが未設定なら最初から設定画面を出す ============ */
+async function boot() {
+  if (!GAS_URL) {
+    $('state').hidden = false;
+    $('state').textContent = 'GAS_URL が未設定です。index.html と同じURLを設定してください。';
+    return;
+  }
+  if (!urlShelf) {           // 棚IDが不明なら判定できないのでログインへ
+    $('loginView').hidden = false;
+    return;
+  }
   $('state').hidden = false;
-  $('state').textContent = 'GAS_URL が未設定です。index.html と同じURLを設定してください。';
+  $('state').textContent = '棚の状態をしらべています…';
+  let r;
+  try { r = await api({ action:'getAdmin', shelfId: urlShelf, key:'' }); }
+  catch (err) { r = { ok:false, error:'network' } }
+  $('state').hidden = true;
+
+  if (r.error === 'no_key') {              // 未設定 → 初回設定画面へ直行
+    $('setupShelf').value = urlShelf;
+    $('setupView').hidden = false;
+    return;
+  }
+  $('loginView').hidden = false;
+  if (r.error === 'unknown action') {
+    $('loginMsg').textContent = 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。';
+  } else if (r.error === 'network') {
+    $('loginMsg').textContent = '通信できませんでした。再読み込みしてください。';
+  }
 }
+boot();
 </script>
 </body>
 </html>
