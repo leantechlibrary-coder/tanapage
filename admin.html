@@ -31,12 +31,13 @@ h1{font-size:24px;font-weight:700;letter-spacing:.06em;line-height:1.5}
 .panel p.help{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:12px;color:var(--ink-soft);letter-spacing:.08em;margin-bottom:6px}
-.field input{width:100%;font-family:inherit;font-size:15px;padding:11px 12px;border:1px solid var(--hairline);background:var(--paper);border-radius:0}
-.field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.field input,.field textarea{width:100%;font-family:inherit;font-size:15px;line-height:1.8;padding:11px 12px;border:1px solid var(--hairline);background:var(--paper);border-radius:0}
+.field textarea{min-height:72px;resize:vertical}
+.field input:focus-visible,.field textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .primary{font-family:inherit;font-size:13.5px;letter-spacing:.14em;color:#fff;background:var(--accent);border:1.5px solid var(--accent);padding:11px 30px;cursor:pointer}
 .primary:disabled{opacity:.5;cursor:default}
 .primary:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-.linkish{font-size:12.5px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.linkish{font-size:12.5px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
 .msg{margin-top:14px;font-size:13px;color:var(--warn)}
 .msg.ok{color:var(--ok)}
 
@@ -52,23 +53,39 @@ h1{font-size:24px;font-weight:700;letter-spacing:.06em;line-height:1.5}
 .report .held{display:inline-block;font-size:11px;color:var(--warn);border:1px solid var(--warn);padding:1px 8px;margin-left:8px;vertical-align:1px}
 .report .comment{margin:10px 0 4px;padding:12px 14px;background:var(--accent-pale);font-size:13.5px}
 .report .comment b{display:block;font-size:10.5px;letter-spacing:.22em;color:var(--accent);margin-bottom:2px}
-.report .actions{display:flex;gap:12px;margin-top:12px;align-items:center}
+.report .actions{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
 .approve-btn{font-family:inherit;font-size:13px;letter-spacing:.1em;color:#fff;background:var(--ok);border:1.5px solid var(--ok);padding:8px 24px;cursor:pointer}
-.reject-btn{font-family:inherit;font-size:12.5px;color:var(--ink-soft);background:none;border:1px solid var(--hairline);padding:8px 18px;cursor:pointer}
-.approve-btn:disabled,.reject-btn:disabled{opacity:.5;cursor:default}
-.approve-btn:focus-visible,.reject-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ghost-btn{font-family:inherit;font-size:12.5px;color:var(--ink-soft);background:none;border:1px solid var(--hairline);padding:8px 18px;cursor:pointer}
+.ghost-btn.accent{color:var(--accent);border-color:var(--accent)}
+.ghost-btn.warn{color:var(--warn);border-color:var(--warn)}
+.approve-btn:disabled,.ghost-btn:disabled{opacity:.5;cursor:default}
+.approve-btn:focus-visible,.ghost-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .hint-approve{font-size:12px;color:var(--ink-soft);margin-top:6px}
 
-.stock{border-bottom:1px solid var(--hairline);padding:14px 2px;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
+/* ---- 在庫 ---- */
+.stock{border-bottom:1px solid var(--hairline);padding:14px 2px}
+.stock-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
 .stock .t{font-size:15px;font-weight:500}
 .stock .m{font-family:var(--mono);font-size:11px;color:var(--ink-soft);grid-column:1}
 .badge{font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:2px 10px;border:1px solid var(--hairline);color:var(--ink-soft);white-space:nowrap}
 .badge.on{color:var(--accent);border-color:var(--accent)}
 .badge.sold{color:var(--ok);border-color:var(--ok)}
+.stock .btns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.book-form{margin:14px 0 8px;padding:18px 16px;background:var(--card);border:1px solid var(--hairline)}
+.book-form .actions{display:flex;gap:14px;align-items:center}
+.add-slot{margin:14px 0 4px}
 
-.toolbar{display:flex;gap:16px;align-items:center;margin-top:34px}
+/* ---- 販売履歴 ---- */
+.history{width:100%;border-collapse:collapse;margin-top:8px}
+.history th,.history td{font-size:13.5px;text-align:left;padding:10px 2px;border-bottom:1px solid var(--hairline)}
+.history th{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-soft);font-weight:500}
+.history td.num,.history th.num{text-align:right;font-family:var(--mono)}
+.history tr.total td{border-bottom:none;font-weight:700}
+
+.toolbar{display:flex;gap:16px;align-items:center;margin-top:40px}
 .state{padding:64px 0;text-align:center;color:var(--ink-soft);font-size:13px;letter-spacing:.1em}
-footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-soft)}
+footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-soft)}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
 </style>
 </head>
 <body>
@@ -134,10 +151,39 @@ footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--hairline);fon
     <div id="reports"></div>
 
     <div class="section-head">
+      <h2>棚のことば</h2>
+      <span></span>
+    </div>
+    <form id="msgForm">
+      <div class="field" style="margin-top:16px">
+        <label for="msgOwner">棚主より（棚ページに公開。空なら欄ごと非表示）</label>
+        <textarea id="msgOwner" maxlength="1000"></textarea>
+      </div>
+      <div class="field">
+        <label for="msgRewards">共通の返礼メッセージ（1行に1つ。「買いました」の後にランダムで1件だけ表示）</label>
+        <textarea id="msgRewards" maxlength="2000"></textarea>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center">
+        <button class="primary" id="msgBtn">保存する</button>
+        <span class="msg" id="msgMsg" style="margin-top:0" role="status"></span>
+      </div>
+    </form>
+
+    <div class="section-head">
       <h2>在庫</h2>
       <span id="stockCount"></span>
     </div>
+    <div class="add-slot">
+      <button class="ghost-btn accent" id="addBookBtn">＋ 本を追加</button>
+    </div>
+    <div id="addFormSlot"></div>
     <div id="stocks"></div>
+
+    <div class="section-head">
+      <h2>販売履歴</h2>
+      <span id="historyNote"></span>
+    </div>
+    <div id="history"></div>
 
     <div class="toolbar">
       <button class="primary" id="reloadBtn">再読み込み</button>
@@ -146,7 +192,7 @@ footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--hairline);fon
     <div class="msg" id="adminMsg" role="alert"></div>
 
     <footer>
-      <p>承認すると本は「販売済」になり、棚ページから消えます。在庫の追加・編集は今はスプレッドシートで行ってください（次スライスでここに来ます）。</p>
+      <p>承認すると本は「販売済」になり、棚ページから消えます。誤って承認したときは在庫の「棚に戻す」で戻せます。撤去した本は一覧から消えます（シートには removed として残ります）。</p>
     </footer>
   </section>
 
@@ -178,6 +224,14 @@ async function api(body) {
   return res.json();
 }
 
+const ERRORS = {
+  'auth': '棚キーが違います。',
+  'shelf not found': 'この棚IDは見つかりませんでした。',
+  'unknown action': 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。',
+  'network': '通信できませんでした。電波のよいところでもう一度どうぞ。',
+};
+const errText = e => ERRORS[e] || `エラー: ${e}`;
+
 /* ============ ログイン ============ */
 $('loginShelf').value = urlShelf;
 $('shelfLabel').textContent = urlShelf ? `棚ID: ${urlShelf}` : '';
@@ -206,12 +260,7 @@ $('loginForm').addEventListener('submit', async e => {
     $('setupKey').focus();
     return;
   }
-  $('loginMsg').textContent = ({
-    'auth': '棚キーが違います。',
-    'shelf not found': 'この棚IDは見つかりませんでした。',
-    'unknown action': 'GAS側が古いままです。Code.gs を更新して「新バージョン」でデプロイしてください。',
-    'network': '通信できませんでした。電波のよいところでもう一度どうぞ。',
-  })[r.error] || `エラー: ${r.error}`;
+  $('loginMsg').textContent = errText(r.error);
 });
 
 /* ============ 棚キー初回設定 ============ */
@@ -231,8 +280,7 @@ $('setupForm').addEventListener('submit', async e => {
     $('setupMsg').textContent = ({
       'key too short': '棚キーは8文字以上にしてください。',
       'key already set': 'すでに棚キーが設定されています。ログインからどうぞ。',
-      'network': '通信できませんでした。もう一度お試しください。',
-    })[r.error] || `エラー: ${r.error}`;
+    })[r.error] || errText(r.error);
     return;
   }
   shelfKey = k1;
@@ -248,6 +296,7 @@ function showAdmin() {
   $('setupView').hidden = true;
   $('adminView').hidden = false;
   $('shelfLabel').textContent = `棚ID: ${shelfId}`;
+  renderConfig();          // ことば欄はログイン時と保存時だけ反映（編集中に消えないように）
   render();
 }
 
@@ -257,12 +306,18 @@ function fmtDate(v) {
   const p = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+const yen = n => '¥' + Number(n || 0).toLocaleString();
+
+function renderConfig() {
+  $('msgOwner').value = adminData.config ? adminData.config.message : '';
+  $('msgRewards').value = adminData.config ? adminData.config.rewards : '';
+}
 
 function render() {
   const { books, reports } = adminData;
   const byId = Object.fromEntries(books.map(b => [b.id, b]));
 
-  // ---- 報告キュー ----
+  /* ---- 報告キュー ---- */
   const rl = $('reports');
   rl.innerHTML = '';
   $('reportCount').textContent = `${reports.length} 件`;
@@ -275,54 +330,196 @@ function render() {
     d.className = 'report';
     d.innerHTML = `
       <div class="book-title">${esc(book ? book.title : rep.bookId)}${rep.status === 'held' ? '<span class="held">URLを含むため保留</span>' : ''}</div>
-      <div class="meta">${esc(fmtDate(rep.at))}　·　${esc(book ? book.author : '')}　·　¥${book ? Number(book.price).toLocaleString() : '?'}</div>
+      <div class="meta">${esc(fmtDate(rep.at))}　·　${esc(book ? book.author : '')}　·　${book ? yen(book.price) : '?'}</div>
       ${rep.comment ? `<div class="comment"><b>購入者のひとこと</b>${esc(rep.comment)}</div>` : ''}
       <div class="actions">
         <button class="approve-btn">承認して販売済にする</button>
-        <button class="reject-btn">却下</button>
+        <button class="ghost-btn">却下</button>
       </div>
       <div class="hint-approve">棚の現物がなくなっていることを確認してから承認してください。</div>`;
     d.querySelector('.approve-btn').addEventListener('click',
-      () => act(d, 'approveReport', rep.id));
-    d.querySelector('.reject-btn').addEventListener('click', () => {
-      if (confirm('この報告を却下しますか？（本は棚に残ります）')) act(d, 'rejectReport', rep.id);
+      () => act(d, { action:'approveReport', reportId: rep.id }));
+    d.querySelector('.ghost-btn').addEventListener('click', () => {
+      if (confirm('この報告を却下しますか？（本は棚に残ります）'))
+        act(d, { action:'rejectReport', reportId: rep.id });
     });
     rl.appendChild(d);
   });
 
-  // ---- 在庫 ----
+  /* ---- 在庫 ---- */
   const STATUS = {
     on_shelf: ['棚にあります', 'on'],
     sold: ['販売済', 'sold'],
-    removed: ['撤去', ''],
   };
   const sl = $('stocks');
   sl.innerHTML = '';
   const shown = books.filter(b => b.status !== 'removed');
   $('stockCount').textContent = `${shown.filter(b => b.status === 'on_shelf').length} 冊 陳列中`;
+  if (!shown.length) sl.innerHTML = '<div class="empty">在庫がありません。「＋ 本を追加」からどうぞ。</div>';
   shown.forEach(b => {
     const [label, cls] = STATUS[b.status] || [b.status, ''];
     const d = document.createElement('div');
     d.className = 'stock';
     d.innerHTML = `
-      <div class="t">${esc(b.title)}</div>
-      <span class="badge ${cls}">${label}</span>
-      <div class="m">${esc(b.author)}　·　¥${Number(b.price).toLocaleString()}${b.status === 'sold' && b.soldAt ? '　·　' + esc(fmtDate(b.soldAt)) : ''}</div>`;
+      <div class="stock-row">
+        <div class="t">${esc(b.title)}</div>
+        <span class="badge ${cls}">${label}</span>
+        <div class="m">${esc(b.author)}　·　${yen(b.price)}${b.status === 'sold' && b.soldAt ? '　·　' + esc(fmtDate(b.soldAt)) : ''}</div>
+      </div>
+      <div class="btns"></div>
+      <div class="form-slot"></div>`;
+    const btns = d.querySelector('.btns');
+    const slot = d.querySelector('.form-slot');
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'ghost-btn accent';
+    editBtn.textContent = '編集';
+    editBtn.addEventListener('click', () => {
+      if (slot.firstChild) { slot.innerHTML = ''; return; }
+      slot.replaceChildren(bookForm(b));
+    });
+    btns.appendChild(editBtn);
+
+    if (b.status === 'sold') {
+      const backBtn = document.createElement('button');
+      backBtn.className = 'ghost-btn';
+      backBtn.textContent = '棚に戻す';
+      backBtn.addEventListener('click', () => {
+        if (confirm(`「${b.title}」を棚に戻しますか？（販売済を取り消します）`))
+          act(d, { action:'upsertBook', book: { ...bookPayload(b), status:'on_shelf' } });
+      });
+      btns.appendChild(backBtn);
+    }
+
+    if (b.status === 'on_shelf') {
+      const rmBtn = document.createElement('button');
+      rmBtn.className = 'ghost-btn warn';
+      rmBtn.textContent = '撤去';
+      rmBtn.addEventListener('click', () => {
+        if (confirm(`「${b.title}」を撤去しますか？（棚ページと一覧から消えます）`))
+          act(d, { action:'removeBook', bookId: b.id });
+      });
+      btns.appendChild(rmBtn);
+    }
     sl.appendChild(d);
   });
+
+  /* ---- 販売履歴（月別） ---- */
+  const sold = books.filter(b => b.status === 'sold' && b.soldAt)
+    .map(b => ({ ...b, d: new Date(b.soldAt) }))
+    .filter(b => !isNaN(b.d));
+  const hist = $('history');
+  if (!sold.length) {
+    hist.innerHTML = '<div class="empty">まだ販売の記録がありません。</div>';
+    $('historyNote').textContent = '';
+  } else {
+    const byMonth = {};
+    sold.forEach(b => {
+      const k = `${b.d.getFullYear()}-${String(b.d.getMonth()+1).padStart(2,'0')}`;
+      (byMonth[k] = byMonth[k] || { n:0, sum:0 });
+      byMonth[k].n++;
+      byMonth[k].sum += Number(b.price) || 0;
+    });
+    const keys = Object.keys(byMonth).sort().reverse();
+    const totalN = sold.length;
+    const totalSum = sold.reduce((s, b) => s + (Number(b.price) || 0), 0);
+    $('historyNote').textContent = `累計 ${totalN} 冊`;
+    hist.innerHTML = `
+      <table class="history">
+        <thead><tr><th>月</th><th class="num">冊数</th><th class="num">売上</th></tr></thead>
+        <tbody>
+          ${keys.map(k => `<tr><td>${k}</td><td class="num">${byMonth[k].n}</td><td class="num">${yen(byMonth[k].sum)}</td></tr>`).join('')}
+          <tr class="total"><td>累計</td><td class="num">${totalN}</td><td class="num">${yen(totalSum)}</td></tr>
+        </tbody>
+      </table>`;
+  }
 }
 
-async function act(el, action, reportId) {
+/* ---- 本の追加・編集フォーム ---- */
+const bookPayload = b => ({
+  id: b.id, title: b.title, author: b.author, price: b.price,
+  note: b.note, reward: b.reward,
+});
+
+function bookForm(b) {
+  const isNew = !b;
+  const v = b || { title:'', author:'', price:'', note:'', reward:'' };
+  const f = document.createElement('form');
+  f.className = 'book-form';
+  f.innerHTML = `
+    <div class="field"><label>書名（必須）</label>
+      <input name="title" required maxlength="100" value="${esc(v.title)}"></div>
+    <div class="field"><label>著者</label>
+      <input name="author" maxlength="100" value="${esc(v.author)}"></div>
+    <div class="field"><label>価格（円）</label>
+      <input name="price" type="number" inputmode="numeric" min="0" step="1" value="${esc(v.price)}"></div>
+    <div class="field"><label>棚主の一言（棚ページに公開）</label>
+      <textarea name="note" maxlength="500">${esc(v.note)}</textarea></div>
+    <div class="field"><label>返礼メッセージ（任意。この本を買った人にだけ表示。空なら共通からランダム）</label>
+      <textarea name="reward" maxlength="500">${esc(v.reward)}</textarea></div>
+    <div class="actions">
+      <button class="primary">${isNew ? '追加する' : '保存する'}</button>
+      <button type="button" class="linkish">やめる</button>
+    </div>
+    <div class="msg" role="alert"></div>`;
+  f.querySelector('.linkish').addEventListener('click', () => f.remove());
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(f);
+    const book = {
+      id: isNew ? '' : b.id,
+      title: fd.get('title'), author: fd.get('author'), price: fd.get('price'),
+      note: fd.get('note'), reward: fd.get('reward'),
+    };
+    await act(f, { action:'upsertBook', book });
+  });
+  return f;
+}
+
+$('addBookBtn').addEventListener('click', () => {
+  const slot = $('addFormSlot');
+  if (slot.firstChild) { slot.innerHTML = ''; return; }
+  const f = bookForm(null);
+  slot.replaceChildren(f);
+  f.querySelector('input[name="title"]').focus();
+});
+
+/* ---- 棚のことば保存 ---- */
+$('msgForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('msgBtn');
+  btn.disabled = true;
+  $('msgMsg').textContent = '';
+  $('msgMsg').classList.remove('ok');
+  let r;
+  try {
+    r = await api({ action:'updateMessage', shelfId, key: shelfKey,
+                    message: $('msgOwner').value, rewards: $('msgRewards').value });
+  } catch (err) { r = { ok:false, error:'network' }; }
+  btn.disabled = false;
+  if (r.ok) {
+    $('msgMsg').textContent = '保存しました。';
+    $('msgMsg').classList.add('ok');
+    if (adminData.config) {
+      adminData.config.message = $('msgOwner').value;
+      adminData.config.rewards = $('msgRewards').value;
+    }
+  } else {
+    $('msgMsg').textContent = errText(r.error);
+  }
+});
+
+/* ---- 共通: 実行して再読み込み ---- */
+async function act(el, body) {
   el.querySelectorAll('button').forEach(b => b.disabled = true);
   $('adminMsg').textContent = '';
   let r;
-  try { r = await api({ action, shelfId, key: shelfKey, reportId }); }
+  try { r = await api({ ...body, shelfId, key: shelfKey }); }
   catch (err) { r = { ok:false, error:'network' }; }
   if (!r.ok) {
     el.querySelectorAll('button').forEach(b => b.disabled = false);
-    $('adminMsg').textContent = r.error === 'network'
-      ? '通信できませんでした。もう一度お試しください。'
-      : `エラー: ${r.error}`;
+    const msgEl = el.querySelector('.msg') || $('adminMsg');
+    msgEl.textContent = errText(r.error);
     return;
   }
   await refresh();
@@ -364,7 +561,7 @@ async function boot() {
   }
   $('loginView').hidden = false;
   if (r.error === 'unknown action') {
-    $('loginMsg').textContent = 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。';
+    $('loginMsg').textContent = errText('unknown action');
   } else if (r.error === 'network') {
     $('loginMsg').textContent = '通信できませんでした。再読み込みしてください。';
   }
