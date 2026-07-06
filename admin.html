@@ -142,6 +142,41 @@ footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--hairline);fon
     </div>
   </section>
 
+  <!-- ============ 棚の新規作成（shelf_config が空のときだけ） ============ -->
+  <section id="createView" hidden>
+    <div class="panel">
+      <h2>棚をつくる</h2>
+      <p class="help">まだ棚がひとつもありません。最初の棚をつくりましょう。棚IDはページURLの <code>?s=</code> に入る文字列で、QRコードにも焼き込まれるため、あとから変えない前提で決めてください。</p>
+      <form id="createForm">
+        <div class="field">
+          <label for="createShelf">棚ID（半角英数字・ハイフン・アンダースコア、32文字まで）</label>
+          <input id="createShelf" required pattern="[A-Za-z0-9][A-Za-z0-9_\-]{0,31}" maxlength="32" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="createName">棚の名前（棚ページの見出しになります）</label>
+          <input id="createName" required maxlength="50">
+        </div>
+        <div class="field">
+          <label for="createIntro">自己紹介（任意。棚ページの上部に出ます）</label>
+          <textarea id="createIntro" maxlength="300"></textarea>
+        </div>
+        <div class="field">
+          <label for="createKey">棚キー（8文字以上の合言葉。パスワード管理アプリでの生成・保存をおすすめします）</label>
+          <input id="createKey" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label for="createKey2">もう一度</label>
+          <input id="createKey2" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <button class="primary" id="createBtn">つくってひらく</button>
+        <div class="msg" id="createMsg" role="alert"></div>
+      </form>
+    </div>
+    <p style="margin-top:14px;font-size:12.5px;color:var(--ink-soft)">
+      2つ目以降の棚は、スプレッドシートの shelf_config に行を追加してつくります（棚キー欄は空のまま→この管理ページで設定）。
+    </p>
+  </section>
+
   <!-- ============ 管理画面 ============ -->
   <section id="adminView" hidden>
     <div class="section-head">
@@ -227,6 +262,10 @@ async function api(body) {
 const ERRORS = {
   'auth': '棚キーが違います。',
   'shelf not found': 'この棚IDは見つかりませんでした。',
+  'bad shelf id': '棚IDは半角英数字・ハイフン・アンダースコアの32文字までにしてください。',
+  'name required': '棚の名前を入れてください。',
+  'key too short': '棚キーは8文字以上にしてください。',
+  'create not allowed': 'すでに棚があるため、ここからは作れません。2つ目以降はシートの shelf_config に行を追加してください。',
   'unknown action': 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。',
   'network': '通信できませんでした。電波のよいところでもう一度どうぞ。',
 };
@@ -260,7 +299,47 @@ $('loginForm').addEventListener('submit', async e => {
     $('setupKey').focus();
     return;
   }
+  if (r.error === 'shelf not found' && r.canCreate) {  // 棚ゼロ → 新規作成へ
+    showCreate(shelfId);
+    return;
+  }
   $('loginMsg').textContent = errText(r.error);
+});
+
+/* ============ 棚の新規作成 ============ */
+function showCreate(prefillId) {
+  $('loginView').hidden = true;
+  $('createShelf').value = prefillId || '';
+  $('createView').hidden = false;
+  (prefillId ? $('createName') : $('createShelf')).focus();
+}
+
+$('createForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const k1 = $('createKey').value, k2 = $('createKey2').value;
+  if (k1 !== k2) { $('createMsg').textContent = '2つの入力が一致しません。'; return; }
+  const btn = $('createBtn');
+  btn.disabled = true;
+  $('createMsg').textContent = '';
+  shelfId = $('createShelf').value.trim();
+  let r;
+  try {
+    r = await api({ action:'createShelf', shelfId,
+                    shelfName: $('createName').value.trim(),
+                    intro: $('createIntro').value.trim(),
+                    newKey: k1 });
+  } catch (err) { r = { ok:false, error:'network' }; }
+
+  if (!r.ok) {
+    btn.disabled = false;
+    $('createMsg').textContent = errText(r.error);
+    return;
+  }
+  shelfKey = k1;
+  const r2 = await api({ action:'getAdmin', shelfId, key: shelfKey });
+  btn.disabled = false;
+  if (r2.ok) { adminData = r2.data; showAdmin(); }
+  else { $('createMsg').textContent = '棚はできましたが読み込みに失敗しました。ログインし直してください。'; }
 });
 
 /* ============ 棚キー初回設定 ============ */
@@ -294,6 +373,7 @@ $('setupForm').addEventListener('submit', async e => {
 function showAdmin() {
   $('loginView').hidden = true;
   $('setupView').hidden = true;
+  $('createView').hidden = true;
   $('adminView').hidden = false;
   $('shelfLabel').textContent = `棚ID: ${shelfId}`;
   renderConfig();          // ことば欄はログイン時と保存時だけ反映（編集中に消えないように）
@@ -557,6 +637,10 @@ async function boot() {
   if (r.error === 'no_key') {              // 未設定 → 初回設定画面へ直行
     $('setupShelf').value = urlShelf;
     $('setupView').hidden = false;
+    return;
+  }
+  if (r.error === 'shelf not found' && r.canCreate) {  // 棚ゼロ → 新規作成へ直行
+    showCreate(urlShelf);
     return;
   }
   $('loginView').hidden = false;
