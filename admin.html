@@ -62,6 +62,16 @@ h1{font-size:24px;font-weight:700;letter-spacing:.06em;line-height:1.5}
 .approve-btn:focus-visible,.ghost-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .hint-approve{font-size:12px;color:var(--ink-soft);margin-top:6px}
 
+/* ---- 棚の見た目 ---- */
+.choices{display:flex;flex-direction:column;gap:2px;margin:12px 0 4px}
+.choice{display:grid;grid-template-columns:auto auto 1fr;gap:0 10px;align-items:baseline;padding:9px 10px;border:1px solid transparent;cursor:pointer}
+.choice:has(input:checked){background:var(--card);border-color:var(--accent)}
+.choice input{accent-color:var(--accent);margin:0;position:relative;top:2px}
+.choice .name{font-size:14px;font-weight:500;white-space:nowrap}
+.choice .desc{font-size:12px;color:var(--ink-soft)}
+.choice .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px;border:1px solid rgba(0,0,0,.08)}
+.group-label{font-size:12px;color:var(--ink-soft);letter-spacing:.08em;margin-top:18px}
+
 /* ---- 在庫 ---- */
 .stock{border-bottom:1px solid var(--hairline);padding:14px 2px}
 .stock-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
@@ -205,6 +215,38 @@ footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--hairline);fon
     </form>
 
     <div class="section-head">
+      <h2>棚の見た目</h2>
+      <span></span>
+    </div>
+    <form id="themeForm">
+      <div class="group-label">テーマ（かたち・書体・返礼の演出）</div>
+      <div class="choices" id="themeChoices" role="radiogroup" aria-label="テーマ">
+        <label class="choice"><input type="radio" name="theme" value="bunko">
+          <span class="name">文庫</span><span class="desc">明朝体の静かな棚。返礼はしおりが下りてくる</span></label>
+        <label class="choice"><input type="radio" name="theme" value="pop">
+          <span class="name">ポップ</span><span class="desc">丸ゴシックとふきだし。返礼はまるく弾んで出る</span></label>
+        <label class="choice"><input type="radio" name="theme" value="index">
+          <span class="name">目録</span><span class="desc">等幅フォントの目録風。返礼はレシートのように印字される</span></label>
+        <label class="choice"><input type="radio" name="theme" value="yohaku">
+          <span class="name">余白</span><span class="desc">細身の文字と余白。返礼はふわりと浮かびあがる</span></label>
+      </div>
+      <div class="group-label">いろ</div>
+      <div class="choices" id="paletteChoices" role="radiogroup" aria-label="いろ">
+        <label class="choice"><input type="radio" name="palette" value="sukkiri">
+          <span class="name"><span class="dot" style="background:#1F4E79"></span>すっきり</span><span class="desc">白地に紺。きりっと</span></label>
+        <label class="choice"><input type="radio" name="palette" value="pastel">
+          <span class="name"><span class="dot" style="background:#8FAE9C"></span>パステル</span><span class="desc">生成りにセージの緑。やわらかく</span></label>
+        <label class="choice"><input type="radio" name="palette" value="vivid">
+          <span class="name"><span class="dot" style="background:#E8442E"></span>ビビッド</span><span class="desc">白地に朱。あかるく</span></label>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;margin-top:16px;flex-wrap:wrap">
+        <button class="primary" id="themeBtn">保存する</button>
+        <span class="msg" id="themeMsg" style="margin-top:0" role="status"></span>
+        <a class="linkish" id="shelfLink" target="_blank" rel="noopener">棚ページで確認 ↗</a>
+      </div>
+    </form>
+
+    <div class="section-head">
       <h2>在庫</h2>
       <span id="stockCount"></span>
     </div>
@@ -267,6 +309,8 @@ const ERRORS = {
   'key too short': '棚キーは8文字以上にしてください。',
   'create not allowed': 'すでに棚があるため、ここからは作れません。2つ目以降はシートの shelf_config に行を追加してください。',
   'unknown action': 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。',
+  // 旧GASの updateMessage は theme/palette を知らずこのエラーを返す
+  'nothing to update': 'GAS側が古いままです。Code.gs を貼り替えて「新バージョン」でデプロイしてください。',
   'network': '通信できませんでした。電波のよいところでもう一度どうぞ。',
 };
 const errText = e => ERRORS[e] || `エラー: ${e}`;
@@ -389,8 +433,18 @@ function fmtDate(v) {
 const yen = n => '¥' + Number(n || 0).toLocaleString();
 
 function renderConfig() {
-  $('msgOwner').value = adminData.config ? adminData.config.message : '';
-  $('msgRewards').value = adminData.config ? adminData.config.rewards : '';
+  const cfg = adminData.config || {};
+  $('msgOwner').value = cfg.message || '';
+  $('msgRewards').value = cfg.rewards || '';
+  checkRadio('theme', cfg.theme || 'bunko');
+  checkRadio('palette', cfg.palette || 'sukkiri');
+  $('shelfLink').href = `./?s=${encodeURIComponent(shelfId)}`;
+}
+
+function checkRadio(name, value) {
+  const el = document.querySelector(`#themeForm input[name="${name}"][value="${value}"]`)
+          || document.querySelector(`#themeForm input[name="${name}"]`);  // 未知の値なら先頭
+  el.checked = true;
 }
 
 function render() {
@@ -586,6 +640,32 @@ $('msgForm').addEventListener('submit', async e => {
     }
   } else {
     $('msgMsg').textContent = errText(r.error);
+  }
+});
+
+/* ---- 棚の見た目保存 ---- */
+$('themeForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('themeBtn');
+  btn.disabled = true;
+  $('themeMsg').textContent = '';
+  $('themeMsg').classList.remove('ok');
+  const fd = new FormData($('themeForm'));
+  let r;
+  try {
+    r = await api({ action:'updateMessage', shelfId, key: shelfKey,
+                    theme: fd.get('theme'), palette: fd.get('palette') });
+  } catch (err) { r = { ok:false, error:'network' }; }
+  btn.disabled = false;
+  if (r.ok) {
+    $('themeMsg').textContent = '保存しました。棚ページに反映されています。';
+    $('themeMsg').classList.add('ok');
+    if (adminData.config) {
+      adminData.config.theme = fd.get('theme');
+      adminData.config.palette = fd.get('palette');
+    }
+  } else {
+    $('themeMsg').textContent = errText(r.error);
   }
 });
 

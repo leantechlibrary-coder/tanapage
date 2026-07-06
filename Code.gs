@@ -2,6 +2,7 @@
  * 棚ページ バックエンド (GAS)
  * Slice 1〜5: シート初期化 / getShelf / report / 棚キー認証+承認フロー / 在庫CRUD+メッセージ編集
  * +初回セットアップ動線: createShelf（shelf_config が空のときだけ棚を作れる）
+ * +見た目の切り替え: updateMessage で theme / palette も更新できる
  *
  * 設計原則:
  * - 購入者の個人情報（IP, UA, Cookie 等）は一切記録しない
@@ -15,6 +16,10 @@ const SHEETS = {
   REPORTS: 'reports',
   CONFIG: 'shelf_config',
 };
+
+// index.html が知っている見た目の組み合わせ（増やすときは両方に足す）
+const THEMES = ['bunko', 'pop', 'index', 'yohaku'];
+const PALETTES = ['sukkiri', 'pastel', 'vivid'];
 
 /* ============================================================
  * 初期セットアップ
@@ -326,6 +331,8 @@ function getAdmin_(req) {
     config: {
       message: String(a.cfg.owner_message || ''),
       rewards: String(a.cfg.default_rewards || ''),
+      theme: String(a.cfg.theme || 'bunko'),
+      palette: String(a.cfg.palette || 'sukkiri'),
     },
   }};
 }
@@ -436,7 +443,8 @@ function removeBook_(req) {
   }
 }
 
-// 「棚主より」(owner_message) と共通返礼 (default_rewards) の更新
+// 「棚主より」(owner_message)・共通返礼 (default_rewards)・
+// 見た目 (theme / palette) の更新。渡されたキーだけ書き換える
 function updateMessage_(req) {
   const a = auth_(req.shelfId, req.key);
   if (!a.ok) return a;
@@ -444,6 +452,14 @@ function updateMessage_(req) {
   const updates = {};
   if ('message' in req) updates.owner_message = String(req.message || '').slice(0, 1000);
   if ('rewards' in req) updates.default_rewards = String(req.rewards || '').slice(0, 2000);
+  if ('theme' in req) {
+    if (THEMES.indexOf(String(req.theme)) < 0) return { ok:false, error:'bad theme' };
+    updates.theme = String(req.theme);
+  }
+  if ('palette' in req) {
+    if (PALETTES.indexOf(String(req.palette)) < 0) return { ok:false, error:'bad palette' };
+    updates.palette = String(req.palette);
+  }
   if (!Object.keys(updates).length) return { ok:false, error:'nothing to update' };
 
   updateRow_(SHEETS.CONFIG, r => r.shelf_id === req.shelfId, updates);

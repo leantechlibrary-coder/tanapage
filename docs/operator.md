@@ -38,7 +38,7 @@ shelf_config シートに1棚1行を追加する:
 
 - **books** — 本の追加・修正。book_id はユニークに（b004, b005…）、status は `on_shelf`。reward_message はその本だけの隠し返礼（空なら共通からランダム）。撤去された本は `removed` として残る
 - **reports** — 購入報告のキュー。status: `pending`（未処理）/ `held`（URLを含むため保留）/ `approved` / `rejected`。基本は棚主が管理ページで処理する
-- **shelf_config** — theme / palette / bg_image / SNSリンクの変更は現状シートでのみ可能
+- **shelf_config** — bg_image / SNSリンクの変更は現状シートでのみ可能。theme / palette（棚の見た目）は棚主が管理ページからも変更できる
 
 ## Code.gs を更新するとき
 
